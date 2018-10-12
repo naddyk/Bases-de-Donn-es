@@ -1,0 +1,397 @@
+1_Creons les tablespace DATA2 et INDX2 
+
+---le tablespace DATA2
+
+create tablespace DATA2 datafile 'c:\oraclexe\app\oracle\product\DATA2.dbf'  size 100M;
+
+--- le tablespaceINDX2
+
+create tablespace INDX2 datafile 'c:\oraclexe\app\oracle\product\INDEX2.dbf'  size 100M;
+
+2-creons toutes les tables du modele physiques "ELEVE" DU MODELE PHYSIQUE  dans le tablespace DATA2
+
+-- la classe professeur
+
+create table PROFESSEUR
+(
+  ID_PROF INTEGER not null,
+  NOM_PROF CHAR(25) not null,
+  PRENOM_PROF CHAR(25) not null,
+  ADRESSE_PROF varchar2(70) not null ,
+  constraint PK_PROFesseur primary key(ID_PROF)
+   using index
+  tablespace INDX2
+)
+tablespace DATA2
+/
+
+
+--la table classe
+
+create table CLASSE
+(
+  ID_cLASSE INTEGER not null,
+  NOM_CLAS CHAR(10) not null,
+  ID_PROF INTEGER  null,
+  constraint PK_ID_CLASSE primary key (ID_CLASSE)
+  using index
+  tablespace INDX2
+)
+tablespace DATA2
+/
+
+
+ ---l ' ajout de la cles etrangere de la table professeur
+
+alter table CLASSE
+add constraint FK_CLASSE_PRINCIPAL_PROF foreign key (ID_PROF)
+references PROFESSEUR (ID_PROF)
+
+/
+
+-- la create table MATIERE
+create table MATIERE
+(
+  ID_MATIERE INTEGER not null,
+  NOM_MAT CHAR(25) not null,
+  DESCRIPTION_MAT varchar(100) not null ,
+  constraint PK_PROFesseur primary key(ID_MATIERE)
+   using index
+  tablespace INDX2
+)
+tablespace DATA2
+
+/
+
+---la creation de la table EST_DIPLOME
+
+create table EST_DIPLOME
+(
+  ID_PROF INTEGER not null,
+  NO_MATIERE INTEGER not null,
+  constraint PK_EST_DIPLOME primary key (ID_PROF,ID_MATIERE)
+  using index
+  tablespace INDX2
+)
+tablespace DATA2
+/
+
+-- l ajout des cles etrangeres
+
+--la cle etrangere matiere
+
+alter table EST_EQUIPAGE
+add constraint FK_MATIERE__DIP  foreign key (ID_MATIERE)
+references MATIERE (ID_MATIERE)
+/
+
+--- la cle etrangere professeur 
+
+alter table EST_EQUIPAGE
+add constraint FK_equipage__PROF  foreign key (ID_PROF)
+references MATIERE (ID_PROF)
+/
+
+
+ ---la creation de la table ELEVE
+
+create table ELEVE
+(
+  ID_ELEVE INTEGER not null,
+  NOM_ELEVE CHAR(25) not null,
+   PRENOM1_ELV CHAR(15) NOT NULL,
+    PRENOM2_ELV CHAR(15)  NULL,
+   PRENOM3_ELV CHAR(15)  NULL,
+ ADRESSE_PROF varchar2(70) not null ,
+  EST_DELEGUE CHAR(1) not null,
+  ID_CLASSE INTEGER  null,
+  constraint PK_ID_CLASSE primary key (ID_CLASSE)
+  using index
+  tablespace INDX2
+)
+tablespace DATA2
+/
+
+--- L'ajout d' une cle etrangere 
+
+
+alter table EST_EQUIPAGE
+add constraint FK_CLASSE__DIP  foreign key (ID_CLASSE)
+references CLASSE (ID_CLASSE)
+/
+
+---la creation de la table note 
+
+create table NOTE
+(
+  ID_ELEVE INTEGER not null,
+  ID_MATIERE INTEGER not null,
+   ID_TRIMESTRE INTEGER not null,
+    NOTE NUMBER(4,2)  not null,
+  constraint PK_ID_CLASSE primary key (ID_ELEVE,ID_MATIERE,ID_TRIMESTRE)
+  using index
+  tablespace INDX2
+)
+tablespace DATA2
+/
+
+
+--- l'ajout des cles etrangeres
+
+--la cle etrangere eleve
+
+alter table NOTE
+add constraint FK_NOTE__ELEVE foreign key (ID_ELEVE)
+references ELEVE (ID_ELEVE)
+/
+
+
+
+ --la cle etrangere matiere
+
+alter table enseigne
+add constraint FK_MATIERE__ELEVE foreign key (ID_MATIERE)
+references MATIERE (ID_MATIERE)
+/
+
+
+
+
+---la creation de la table  enseigne
+create table ENSEIGNE
+(
+  ID_CLASSE INTEGER not null,
+  ID_MATIERE INTEGER not null,
+   ID_PROFESSEUR INTEGER not null,
+  constraint PK_ID_CLASSE primary key (ID_ELEVE,ID_MATIERE,ID_TRIMESTRE)
+  using index
+  tablespace INDX2
+)
+tablespace DATA2
+/
+
+
+
+--la cle etrangere classe
+
+
+alter table ENSEIGNE
+add constraint FK_CLASSE__ENSEIGNE foreign key (ID_CLASSE)
+references CLASSE(ID_CLASSE)
+ /
+
+-- la creation de la classe prof
+
+alter table NOTE
+add constraint FK_PROF__ELEVE foreign key (ID_PROF)
+references  PROFESSEUR(ID_PROF)
+
+/
+
+
+3_creons une sequence ajoutons 3 lignes par tables
+
+  ---sequence professeur et ajoutons 3 ligne de sa table
+
+create sequence s_professeur 
+increment by 1 
+start with 2 ;
+
+insert into PROFESSEUR
+values(s_professeur.nextval,'Boulanger','van','1 rue halevy 75009 Paris');
+insert into PROFESSEUR
+
+values(s_professeur.nextval,'ARNOUX','Benoit','15 cours lafayette 75010 Paris');
+
+insert into PROFESSEUR
+values(s_professeur.nextval,'Boulanger','francis','1 rue halevy 75009 Paris');
+
+
+---sequence classe et ajoutons 3 ligne de sa table
+
+create sequence s_classe 
+increment by 1 
+start with 2 ;
+
+insert into CLASSE
+values(s_classe.nextval,'TP_programmation',1);
+insert into PROFESSEUR
+
+values(s_classe.nextval,'Cours_Reseau',2);
+
+insert into CLASSE
+values(s_classe.nextval,'dessin',3);
+
+
+
+---sequence enseigne et ajoutons 3 ligne de sa table
+
+create sequence s_enseigne 
+increment by 1 
+start with 2 ;
+
+insert into ENSEIGNE
+values(s_enseigne.nextval,3,1);
+
+insert into ENSEIGNE
+values(s_enseigne.nextval,1,2);
+
+insert into ENSEIGNE
+values(s_enseigne.nextval,2,3);
+
+
+--- ajoutons 3 ligne de la table est_diplome
+
+insert into EST_DIPLOME
+values(2,1);
+
+insert into EST_DIPLOME
+values(3,2);
+
+insert into EST_DIPLOME
+values(1,2);
+
+
+
+  ---sequence Eleve et ajoutons 3 ligne de sa table
+
+create sequence s_eleve
+increment by 1 
+start with 2 ;
+
+insert into ELEVE
+values(s_eleve.nextval,'dhivina'frenaddy',','willy','a',3);
+insert into ELEVE
+values(s_eleve.nextval,'chat','chien','c',2);
+
+insert into ELEVE
+values(s_eleve.nextval,'matin','verleine','p',1);
+
+
+ ---sequence matiere et ajoutons 3 ligne de sa table
+
+create sequence s_matiere
+increment by 1 
+start with 2 ;
+
+insert into MATIERE
+values(s_matiere.nextval,'maths,','algebres de bool');
+insert into MATIERE
+values( s_matiere.nextval,'physiques','circuits electriques');
+
+insert into MATIERE
+values(s_matiere.nextval,'reseau informatique','cablage');
+
+
+
+
+
+ ---sequence note et ajoutons 3 ligne de sa table
+
+create sequence s_note
+increment by 1 
+start with 2 ;
+
+insert into NOTE
+values(s_note.nextval,2,2,13);
+insert into NOTE
+values(s_note.nextval,3,1,14);
+
+insert into NOTE
+values(s_note.nextval,3,'3,15);
+
+
+4-Requetes
+
+requetes simples
+
+1_LES eleves habitant paris
+
+select NOM_ELV , ADRESSE_ELV from ELEVE where ADRESSE_ELV like '%PARIS%';
+
+2- les eleves ne possedant que 2 prenoms
+ select NOM_ELV ,PRENOM1_ELV,PRENOM2_ELV  from ELEVE where PRENOM3_ELV is null;
+3- liste des professeurs ordonnes par classe
+select nom_prof ,nom_clas from professeur , classe where classe.id_prof=classe.id_classe order by nom_clas;
+
+4_liste ordonne par numero de classe
+select id_classe,nom_prof from professeur , classe where classe.id_prof=classe.id_classe order by id_classe;
+
+5-matieres enseignes et professeur par classe , ordonnes par numero de classe et nom_prof;
+ select id_class ,nom_prof,nom_mat from classe , professeur , matiere where classe.id_prof=prof.id_prof and 
+enseigne.id_classe=classe.id_classe and enseigne.id_matiere=matiere.id_matiere order by id_class and nom_prof
+6_le nom de matieres 
+select nom_elv , nom_mat from eleve , matiere where note.id_eleve=eleve.id_eleve and note.id_matiere=matiere.id_matiere order by nom_elv and id_matiere;
+
+REgroupement 
+ 
+1-afficher la meilleure note par matiere
+select id_matiere,avg(note) from matiere , note where note.id_matiere=matiere.id_matiere  group by id.matiere;
+2-AFFICHER le nombre d eleves du lycees
+ select count (id_eleve) from eleve, classe where  eleve.id_classe=classe.id_classe  group by nom_clas;
+
+requetes imbriques
+1_le nom des eleves 
+ select nom_elv,nom_mat,note from note, matiere where( select avg(note) from note , matiere ) and note.id_matiere=matiere.id_matiere order by nom_elv;
+2_les nom des eleves qui ont obtenu une note superieure a la moyenne
+select nom_elv,nom_mat,note from note, matiere where note>( select avg(note) from note , matiere ) and note.id_matiere=matiere.id_matiere order by nom_elv;
+
+
+
+     4- les vues 
+  create view as select nom_elv,avg(note) as "moyenne" from eleve , note where note.id_eleve=eleve.id_eleve  group by nom_elv;
+
+
+
+6_ le trigger 
+
+CREATE OR REPLACE TRIGGER log_prof
+AFTER UPDATE OR INSERT ON profession
+FOR EACH ROW
+DECLARE
+BEGIN
+insert into log_prof
+values ( : new.id_prof, :new.nom_prof, :new.prenom_prof,
+:new.adresse_prof,:new.f_id_prof);
+END IF;
+END;
+/
+IF UPDATING THEN
+UPDATE log_prof SET
+values ( : new.id_prof, :new.nom_prof, :new.prenom_prof,
+id_prof= id_prof + (:OLD.prof - :NEW.prof));
+WHERE Id_prof = :NEW.Id_prof;
+END IF;
+END;
+/ 
+
+ 5) PL/sql
+
+DECLARE
+erreur_Oracle varchar2(30) ;
+p_nombre INTEGER := 0;
+BEGIN
+FOR i IN 1..10000 LOOP
+insert into opdef.professeeur
+values (s_professeur.nextval, 'boulanger',  'van','1 rue halevy 75009 paris');
+select Max(id_prof) INTO v_nombr from opdef.employe;
+update opdef.employe set nom='Martin' where id_emp=v_nombre;
+COMMIT;
+END LOOP;
+dbms_output.put_line ( '-- insertions effectuées --') ;
+SELECT COUNT(id_prof) INTO p_nombre FROM opdef.professeur;
+IF p_nombre > 20000 THEN
+DELETE FROM opdef.professeur WHERE id_emp > 20 ;
+COMMIT;
+END IF;
+EXCEPTION
+When NO_DATA_FOUND
+dbms_output.put_line (‘Problème !’) ;
+WHEN DUP_VAL_ON_INDEX THEN
+NULL;
+WHEN OTHERS THEN
+erreur_Oracle := substr (sqlerrm(sqlcode),1,30) ;
+dbms_output.put_line (erreur_Oracle) ;
+ROLLBACK;
+END;
+/
